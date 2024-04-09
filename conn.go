@@ -629,14 +629,18 @@ func (w *messageWriter) flushFrame(final bool, extra []byte) error {
 	// documentation for more info.
 
 	if c.isWriting {
-		panic("concurrent write to websocket connection")
+		// panic("concurrent write to websocket connection")
+		ccwErr := errors.New("handled concurrent write to websocket connection")
+		return w.endMessage(ccwErr)
 	}
 	c.isWriting = true
 
 	err := c.write(w.frameType, c.writeDeadline, c.writeBuf[framePos:w.pos], extra)
 
 	if !c.isWriting {
-		panic("concurrent write to websocket connection")
+		// panic("concurrent write to websocket connection")
+		ccwErr := errors.New("handled concurrent write to websocket connection")
+		return w.endMessage(ccwErr)
 	}
 	c.isWriting = false
 
@@ -757,12 +761,16 @@ func (c *Conn) WritePreparedMessage(pm *PreparedMessage) error {
 		return err
 	}
 	if c.isWriting {
-		panic("concurrent write to websocket connection")
+		// panic("concurrent write to websocket connection")
+		ccwErr := errors.New("handled concurrent write to websocket connection")
+		return ccwErr
 	}
 	c.isWriting = true
 	err = c.write(frameType, c.writeDeadline, frameData, nil)
 	if !c.isWriting {
-		panic("concurrent write to websocket connection")
+		// panic("concurrent write to websocket connection")
+		ccwErr := errors.New("handled concurrent write to websocket connection")
+		return ccwErr
 	}
 	c.isWriting = false
 	return err
